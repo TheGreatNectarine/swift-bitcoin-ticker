@@ -2,84 +2,114 @@
 //  ViewController.swift
 //  BitcoinTicker
 //
-//  Created by Angela Yu on 23/01/2016.
-//  Copyright © 2016 London App Brewery. All rights reserved.
+//  Created by Nikandr Margal on 1/5/19.
+//  Copyright © 2019 LÏL N1KKY. All rights reserved.
 //
 
 import UIKit
+import Alamofire
+import SwiftyJSON
+
+extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+	func numberOfComponents(in pickerView: UIPickerView) -> Int {
+		return 2
+	}
+
+	func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+		switch component {
+		case 0:
+			return cryptos.count
+		case 1:
+			return fiats.count
+		default:
+			return 0
+		}
+	}
+
+	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+		switch component {
+		case 0:
+			return cryptos[row]
+		case 1:
+			return fiats[row]
+		default:
+			return nil
+		}
+	}
+
+	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+		print(fiats[row])
+		switch component {
+		case 0:
+			viewModel.selectedCrypto = cryptos[row]
+		case 1:
+			viewModel.selectedFiat = fiats[row]
+		default:
+			viewModel.selectedFiat = "USD"
+			viewModel.selectedCrypto = "BTC"
+		}
+		updateURL(crypto: viewModel.selectedCrypto, fiat: viewModel.selectedFiat)
+	}
+}
 
 class ViewController: UIViewController {
     
-    let baseURL = "https://apiv2.bitcoinaverage.com/indices/global/ticker/BTC"
-    let currencyArray = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","ZAR"]
-    var finalURL = ""
+    let baseURL = "https://apiv2.bitcoinaverage.com/indices/global/ticker/"
+	var finalURL = ""
+	var viewModel = ViewModel(initCrypto: "BCH", initFiat: "AUD")
+	let cryptos = ["BCH", "BTC", "ETH", "LTC", "XMR"]
+    let fiats = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","UAH","ZAR"]
+	
 
-    //Pre-setup IBOutlets
-    @IBOutlet weak var bitcoinPriceLabel: UILabel!
+    @IBOutlet weak var priceLabel: UILabel!
     @IBOutlet weak var currencyPicker: UIPickerView!
-    
+	@IBOutlet weak var cryptoImage: UIImageView!
 
-    
     override func viewDidLoad() {
-        super.viewDidLoad()
-       
+		super.viewDidLoad()
+		currencyPicker.delegate = self
+		currencyPicker.dataSource = self
+
+		if cryptos.contains(viewModel.selectedCrypto) && fiats.contains(viewModel.selectedFiat) {
+			currencyPicker.selectRow(cryptos.firstIndex(of: viewModel.selectedCrypto)!, inComponent: 0, animated: true)
+			currencyPicker.selectRow(fiats.firstIndex(of: viewModel.selectedFiat)!, inComponent: 1, animated: true)
+			updateURL(crypto: viewModel.selectedCrypto, fiat: viewModel.selectedFiat)
+		}
     }
 
+	func updateURL(crypto: String, fiat: String) {
+		finalURL = baseURL + crypto + fiat
+		getRatesData(url: finalURL)
+	}
     
-    //TODO: Place your 3 UIPickerView delegate methods here
-    
-    
-    
+    //MARK: - Networking
+    func getRatesData(url: String) {
+        Alamofire.request(url, method: .get).responseJSON { response in
+                if response.result.isSuccess {
+                    print("Got rate data")
+					self.updateRatesData(for: JSON(response.result.value!))
+                } else {
+					print("Error: \(response.result.error as Error?)")
+                    self.priceLabel.text = "Connection Issues"
+                }
+            }
+    }
 
-    
-    
-    
-//    
-//    //MARK: - Networking
-//    /***************************************************************/
-//    
-//    func getWeatherData(url: String, parameters: [String : String]) {
-//        
-//        Alamofire.request(url, method: .get, parameters: parameters)
-//            .responseJSON { response in
-//                if response.result.isSuccess {
-//
-//                    print("Sucess! Got the weather data")
-//                    let weatherJSON : JSON = JSON(response.result.value!)
-//
-//                    self.updateWeatherData(json: weatherJSON)
-//
-//                } else {
-//                    print("Error: \(String(describing: response.result.error))")
-//                    self.bitcoinPriceLabel.text = "Connection Issues"
-//                }
-//            }
-//
-//    }
-//
-//    
-//    
-//    
-//    
-//    //MARK: - JSON Parsing
-//    /***************************************************************/
-//    
-//    func updateWeatherData(json : JSON) {
-//        
-//        if let tempResult = json["main"]["temp"].double {
-//        
-//        weatherData.temperature = Int(round(tempResult!) - 273.15)
-//        weatherData.city = json["name"].stringValue
-//        weatherData.condition = json["weather"][0]["id"].intValue
-//        weatherData.weatherIconName =    weatherData.updateWeatherIcon(condition: weatherData.condition)
-//        }
-//        
-//        updateUIWithWeatherData()
-//    }
-//    
+    //MARK: - JSON Parsing
+    func updateRatesData(for json: JSON) {
+        if let rate = json["ask"].double {
+			priceLabel.text = "1\(viewModel.selectedCrypto) = \(String(format: "%.2f", rate))\(viewModel.selectedFiat)"
+			updateCryptoIcon()
+		} else {
+			priceLabel.text = "CANNOT GET DATA"
+		}
+    }
 
-
-
+	func updateCryptoIcon() {
+		cryptoImage.image = UIImage(named: viewModel.cryptoIconName)
+	}
 
 }
+
+
 
