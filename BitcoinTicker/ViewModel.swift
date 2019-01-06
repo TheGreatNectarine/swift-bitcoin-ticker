@@ -9,6 +9,8 @@
 import UIKit
 
 class ViewModel {
+	static let cryptos = ["BCH", "BTC", "ETH", "LTC", "XMR"]
+	static let fiats = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","UAH","ZAR"]
 	var selectedCrypto: String {
 		didSet {
 			updateCryptoIconName()

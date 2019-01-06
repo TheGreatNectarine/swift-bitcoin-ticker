@@ -18,9 +18,9 @@ extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
 	func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
 		switch component {
 		case 0:
-			return cryptos.count
+			return ViewModel.cryptos.count
 		case 1:
-			return fiats.count
+			return ViewModel.fiats.count
 		default:
 			return 0
 		}
@@ -29,26 +29,26 @@ extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
 	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 		switch component {
 		case 0:
-			return cryptos[row]
+			return ViewModel.cryptos[row]
 		case 1:
-			return fiats[row]
+			return ViewModel.fiats[row]
 		default:
 			return nil
 		}
 	}
 
 	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-		print(fiats[row])
+		print(ViewModel.fiats[row])
 		switch component {
 		case 0:
-			viewModel.selectedCrypto = cryptos[row]
+			viewModel.selectedCrypto = ViewModel.cryptos[row]
 		case 1:
-			viewModel.selectedFiat = fiats[row]
+			viewModel.selectedFiat = ViewModel.fiats[row]
 		default:
 			viewModel.selectedFiat = "USD"
 			viewModel.selectedCrypto = "BTC"
 		}
-		updateURL(crypto: viewModel.selectedCrypto, fiat: viewModel.selectedFiat)
+		getRatesForCurrencies(crypto: viewModel.selectedCrypto, fiat: viewModel.selectedFiat)
 	}
 }
 
@@ -57,33 +57,51 @@ class ViewController: UIViewController {
     let baseURL = "https://apiv2.bitcoinaverage.com/indices/global/ticker/"
 	var finalURL = ""
 	var viewModel = ViewModel(initCrypto: "BCH", initFiat: "AUD")
-	let cryptos = ["BCH", "BTC", "ETH", "LTC", "XMR"]
-    let fiats = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","UAH","ZAR"]
-	
 
+	//MARK: - Outlets and actions
     @IBOutlet weak var priceLabel: UILabel!
     @IBOutlet weak var currencyPicker: UIPickerView!
 	@IBOutlet weak var cryptoImage: UIImageView!
+	@IBOutlet weak var reloadButton: UIButton!
+	@IBAction func reloadButtonPressed(_ sender: Any) {
+		presetPickersAndGetStartRates()
+		disableReloadButton()
+		Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(enableReloadButton), userInfo: nil, repeats: false)
+	}
 
+	@objc func enableReloadButton() {
+		reloadButton.isEnabled = true
+		reloadButton.alpha = 1
+	}
+
+	func disableReloadButton() {
+		reloadButton.isEnabled = false
+		reloadButton.alpha = 0.5
+	}
+
+	//MARK: - View set-up
     override func viewDidLoad() {
 		super.viewDidLoad()
 		currencyPicker.delegate = self
 		currencyPicker.dataSource = self
-
-		if cryptos.contains(viewModel.selectedCrypto) && fiats.contains(viewModel.selectedFiat) {
-			currencyPicker.selectRow(cryptos.firstIndex(of: viewModel.selectedCrypto)!, inComponent: 0, animated: true)
-			currencyPicker.selectRow(fiats.firstIndex(of: viewModel.selectedFiat)!, inComponent: 1, animated: true)
-			updateURL(crypto: viewModel.selectedCrypto, fiat: viewModel.selectedFiat)
-		}
+		presetPickersAndGetStartRates()
     }
 
-	func updateURL(crypto: String, fiat: String) {
-		finalURL = baseURL + crypto + fiat
-		getRatesData(url: finalURL)
+	func presetPickersAndGetStartRates() {
+		if ViewModel.cryptos.contains(viewModel.selectedCrypto) && ViewModel.fiats.contains(viewModel.selectedFiat) {
+			currencyPicker.selectRow(ViewModel.cryptos.firstIndex(of: viewModel.selectedCrypto)!, inComponent: 0, animated: true)
+			currencyPicker.selectRow(ViewModel.fiats.firstIndex(of: viewModel.selectedFiat)!, inComponent: 1, animated: true)
+			getRatesForCurrencies(crypto: viewModel.selectedCrypto, fiat: viewModel.selectedFiat)
+		}
 	}
     
     //MARK: - Networking
-    func getRatesData(url: String) {
+	func getRatesForCurrencies(crypto: String, fiat: String) {
+		finalURL = baseURL + crypto + fiat
+		callApiForNewRates(url: finalURL)
+	}
+
+    func callApiForNewRates(url: String) {
         Alamofire.request(url, method: .get).responseJSON { response in
                 if response.result.isSuccess {
                     print("Got rate data")
@@ -95,21 +113,17 @@ class ViewController: UIViewController {
             }
     }
 
-    //MARK: - JSON Parsing
-    func updateRatesData(for json: JSON) {
-        if let rate = json["ask"].double {
+	//MARK: - Updating view elements
+	func updateRatesData(for json: JSON) {
+		if let rate = json["ask"].double {
 			priceLabel.text = "1\(viewModel.selectedCrypto) = \(String(format: "%.2f", rate))\(viewModel.selectedFiat)"
 			updateCryptoIcon()
 		} else {
 			priceLabel.text = "CANNOT GET DATA"
 		}
-    }
+	}
 
 	func updateCryptoIcon() {
 		cryptoImage.image = UIImage(named: viewModel.cryptoIconName)
 	}
-
 }
-
-
-

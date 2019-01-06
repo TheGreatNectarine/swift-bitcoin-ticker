@@ -69,13 +69,27 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7vp-mo-JoL">
+                                        <rect key="frame" x="0.0" y="396" width="375" height="40"/>
+                                        <color key="backgroundColor" white="1" alpha="0.60000002379999995" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
+                                        <state key="normal" title="Reload">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="reloadButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jlc-h4-pho"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" red="0.070588235294117646" green="0.52941176470588236" blue="0.59215686274509804" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
+                                    <constraint firstItem="7vp-mo-JoL" firstAttribute="leading" secondItem="H4g-qN-MbT" secondAttribute="leading" id="24D-G0-bko"/>
                                     <constraint firstAttribute="trailing" secondItem="B2X-zc-Tnq" secondAttribute="trailing" constant="60" id="6dM-cM-UQm"/>
                                     <constraint firstItem="c1V-SU-qjY" firstAttribute="top" secondItem="H4g-qN-MbT" secondAttribute="top" constant="30" id="FRT-xJ-oZD"/>
                                     <constraint firstItem="c1V-SU-qjY" firstAttribute="leading" secondItem="H4g-qN-MbT" secondAttribute="leading" id="Gjz-QA-PvA"/>
                                     <constraint firstItem="ZGz-pe-AwG" firstAttribute="top" secondItem="mnV-O0-hhD" secondAttribute="bottom" id="I1A-zq-xKt"/>
+                                    <constraint firstAttribute="trailing" secondItem="7vp-mo-JoL" secondAttribute="trailing" id="Z6C-aB-hAl"/>
+                                    <constraint firstItem="ZGz-pe-AwG" firstAttribute="top" secondItem="7vp-mo-JoL" secondAttribute="bottom" constant="100" id="fvU-cy-D9C"/>
                                     <constraint firstAttribute="bottom" secondItem="ZGz-pe-AwG" secondAttribute="bottom" constant="60" id="gQW-rN-B2C"/>
                                     <constraint firstAttribute="trailing" secondItem="ZGz-pe-AwG" secondAttribute="trailing" id="han-oI-JPz"/>
                                     <constraint firstItem="ZGz-pe-AwG" firstAttribute="top" secondItem="B2X-zc-Tnq" secondAttribute="bottom" id="ldH-Ax-hYu"/>
@@ -100,6 +114,7 @@
                         <outlet property="cryptoImage" destination="txK-OS-RfU" id="L7e-JE-ZE8"/>
                         <outlet property="currencyPicker" destination="ZGz-pe-AwG" id="MaK-nO-flZ"/>
                         <outlet property="priceLabel" destination="Jg7-Dt-rnc" id="LGh-mP-7xe"/>
+                        <outlet property="reloadButton" destination="7vp-mo-JoL" id="KIf-EZ-Ux1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
