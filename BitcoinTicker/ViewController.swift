@@ -116,7 +116,8 @@ class ViewController: UIViewController {
 	//MARK: - Updating view elements
 	func updateRatesData(for json: JSON) {
 		if let rate = json["ask"].double {
-			priceLabel.text = "1\(viewModel.selectedCrypto) = \(String(format: "%.2f", rate))\(viewModel.selectedFiat)"
+			let symbol = ViewModel.currencySymbols[ViewModel.fiats.firstIndex(of: viewModel.selectedFiat)!]
+			priceLabel.text = "1\(viewModel.selectedCrypto) = \(String(format: "%.2f", rate))\(symbol)"
 			updateCryptoIcon()
 		} else {
 			priceLabel.text = "CANNOT GET DATA"
